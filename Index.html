@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Chat App</title>
+  <style>
+    body { font-family: Arial; }
+    #messages { height: 300px; overflow-y: scroll; border: 1px solid #000; }
+    input { width: 70%; }
+  </style>
+</head>
+<body>
+
+<h2>My Chat App</h2>
+
+<div id="messages"></div>
+
+<input id="msg" placeholder="Type message">
+<button onclick="sendMessage()">Send</button>
+
+<script>
+let messages = [];
+
+function sendMessage() {
+  let msg = document.getElementById("msg").value;
+
+  messages.push(msg);
+
+  displayMessages();
+  document.getElementById("msg").value = "";
+}
+
+function displayMessages() {
+  let html = "";
+  messages.forEach(m => {
+    html += "<p>" + m + "</p>";
+  });
+  document.getElementById("messages").innerHTML = html;
+}
+</script>
+
+</body>
+</html>
