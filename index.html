@@ -1,122 +1,219 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>🔥 Chat App</title>
+  <title>Chat With Ketan</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <style>
     body {
-      font-family: Arial;
-      background: #ece5dd;
       margin: 0;
+      font-family: Arial;
     }
 
-    h2 {
-      background: #075e54;
+    /* LOGIN */
+    #loginPage {
+      height: 100vh;
+      background: linear-gradient(135deg, #000000, #8B0000);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .login-box {
+      background: rgba(0,0,0,0.8);
+      padding: 25px;
+      border-radius: 10px;
+      width: 85%;
+      max-width: 300px;
       color: white;
+      text-align: center;
+    }
+
+    input {
+      width: 100%;
       padding: 10px;
-      margin: 0;
+      margin-top: 10px;
+      border: none;
+      outline: none;
+    }
+
+    button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 15px;
+      background: red;
+      border: none;
+      color: white;
+    }
+
+    /* CHAT */
+    #chatPage {
+      display: none;
+      height: 100vh;
+      flex-direction: column;
+      background: #ece5dd;
+    }
+
+    header {
+      background: black;
+      color: red;
+      padding: 10px;
+      text-align: center;
     }
 
     #messages {
-      height: 80vh;
-      overflow-y: scroll;
+      flex: 1;
+      overflow-y: auto;
       padding: 10px;
+      display: flex;
+      flex-direction: column;
     }
 
     .msg {
-      background: white;
       padding: 8px;
       margin: 5px;
-      border-radius: 5px;
-      width: fit-content;
+      border-radius: 10px;
+      max-width: 70%;
+    }
+
+    .me {
+      background: red;
+      color: white;
+      align-self: flex-end;
+    }
+
+    .other {
+      background: white;
+      align-self: flex-start;
     }
 
     #inputBox {
       display: flex;
-      position: fixed;
-      bottom: 0;
-      width: 100%;
-      background: #ddd;
     }
 
-    input {
+    #inputBox input {
       flex: 1;
-      padding: 10px;
-      border: none;
-    }
-
-    button {
-      padding: 10px;
-      background: #25d366;
-      border: none;
-      color: white;
     }
   </style>
 </head>
 
 <body>
 
-<h2>💬 My Chat App</h2>
+<!-- LOGIN -->
+<div id="loginPage">
+  <div class="login-box">
+    <h2>💬 Chat With Ketan</h2>
+    <input id="username" placeholder="Enter name">
+    <label><input type="checkbox" id="remember"> Remember me</label>
+    <button onclick="login()">LOGIN</button>
+  </div>
+</div>
 
-<div id="messages"></div>
+<!-- CHAT -->
+<div id="chatPage">
+  <header>🌍 Global Chat</header>
+  <div id="messages"></div>
 
-<div id="inputBox">
-  <input id="msg" placeholder="Type message">
-  <button onclick="sendMessage()">Send</button>
+  <div id="inputBox">
+    <input id="msg" placeholder="Type message">
+    <button onclick="sendMessage()">Send</button>
+  </div>
 </div>
 
 <!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
 
-<script type="module">
-  // Import the functions you need from the SDKs you need
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
-  import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-analytics.js";
-  // TODO: Add SDKs for Firebase products that you want to use
-  // https://firebase.google.com/docs/web/setup#available-libraries
+<script>
 
-  // Your web app's Firebase configuration
-  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-  const firebaseConfig = {
-    apiKey: "AIzaSyCfOOaJoq6hwDQm-V85wdAVYrqqPN_32_c",
-    authDomain: "chat-app-24be4.firebaseapp.com",
-    databaseURL: "https://chat-app-24be4-default-rtdb.firebaseio.com",
-    projectId: "chat-app-24be4",
-    storageBucket: "chat-app-24be4.firebasestorage.app",
-    messagingSenderId: "493367863067",
-    appId: "1:493367863067:web:1b31247bf6da38284a15be",
-    measurementId: "G-NVGX5N797X"
-  };
+const firebaseConfig = {
+  apiKey: "AIzaSyCfOOaJoq6hwDQm-V85wdAVYrqqPN_32_c",
+  authDomain: "chat-app-24be4.firebaseapp.com",
+  databaseURL: "https://chat-app-24be4-default-rtdb.firebaseio.com",
+  projectId: "chat-app-24be4",
+  storageBucket: "chat-app-24be4.firebasestorage.app",
+  messagingSenderId: "493367863067",
+  appId: "1:493367863067:web:1b31247bf6da38284a15be",
+  measurementId: "G-NVGX5N797X"
+};
 
-  // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
-  const analytics = getAnalytics(app);
+let currentUser = "";
+
+// AUTO LOGIN
+window.onload = function() {
+  let savedUser = localStorage.getItem("user");
+  if(savedUser){
+    currentUser = savedUser;
+    openChat();
+  }
+};
+
+// LOGIN BUTTON FIXED ✅
+function login(){
+  let name = document.getElementById("username").value;
+  let remember = document.getElementById("remember").checked;
+
+  if(name.trim() === ""){
+    alert("Enter name");
+    return;
+  }
+
+  currentUser = name;
+
+  if(remember){
+    localStorage.setItem("user", name);
+  }
+
+  openChat();
+}
+
+function openChat(){
+  document.getElementById("loginPage").style.display="none";
+  document.getElementById("chatPage").style.display="flex";
+}
+
+// SEND MESSAGE
+function sendMessage(){
+  let msg = document.getElementById("msg").value;
+
+  if(msg.trim() === "") return;
+
+  db.ref("globalChat").push({
+    text: msg,
+    user: currentUser
+  });
+
+  // 🤖 BOT REPLY
+  if(msg.toLowerCase().includes("hi")){
+    setTimeout(()=>{
+      db.ref("globalChat").push({
+        text: "Hello 👋 I'm ChatBot",
+        user: "Bot"
+      });
+    },1000);
+  }
+
+  document.getElementById("msg").value="";
+}
+
+// RECEIVE
+db.ref("globalChat").on("value", snapshot=>{
+  let html="";
+
+  snapshot.forEach(child=>{
+    let data=child.val();
+    let cls = data.user === currentUser ? "msg me" : "msg other";
+
+    html += `<div class="${cls}">
+              <b>${data.user}</b><br>${data.text}
+            </div>`;
+  });
+
+  let box=document.getElementById("messages");
+  box.innerHTML=html;
+  box.scrollTop=box.scrollHeight;
+});
 </script>
 
 </body>
 </html>
-
-<script type="module">
-  // Import the functions you need from the SDKs you need
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
-  import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-analytics.js";
-  // TODO: Add SDKs for Firebase products that you want to use
-  // https://firebase.google.com/docs/web/setup#available-libraries
-
-  // Your web app's Firebase configuration
-  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-  const firebaseConfig = {
-    apiKey: "AIzaSyCfOOaJoq6hwDQm-V85wdAVYrqqPN_32_c",
-    authDomain: "chat-app-24be4.firebaseapp.com",
-    databaseURL: "https://chat-app-24be4-default-rtdb.firebaseio.com",
-    projectId: "chat-app-24be4",
-    storageBucket: "chat-app-24be4.firebasestorage.app",
-    messagingSenderId: "493367863067",
-    appId: "1:493367863067:web:1b31247bf6da38284a15be",
-    measurementId: "G-NVGX5N797X"
-  };
-
-  // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
-  const analytics = getAnalytics(app);
-</script>
